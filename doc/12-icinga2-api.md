@@ -675,7 +675,9 @@ via a join:
 
 ```
 $ curl -k -s -S -i -u root:icinga 'https://localhost:5665/v1/objects/services?attrs=display_name&attrs=check_command&joins=host.name&joins=host.address&filter=host.vars.os==%22Linux%22&pretty=1'
+```
 
+```
 {
     "results": [
         {
@@ -741,7 +743,9 @@ $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -H 'X-HTTP-Method-Override: GET' -X POST \
  'https://127.0.0.1:5665/v1/objects/services' \
 -d '{ "joins": [ "host.name", "host.address" ], "attrs": [ "name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0", "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -774,7 +778,9 @@ $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -H 'X-HTTP-Method-Override: GET' -X POST \
  'https://localhost:5665/v1/objects/comments' \
  -d '{ "joins": [ "service.name", "service.acknowledgement", "service.acknowledgement_expiry" ], "attrs": [ "author", "text" ], "filter": "service.acknowledgement!=0 && service.acknowledgement_expiry==0", "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -823,6 +829,9 @@ Example for creating the new host object `example.localdomain`:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X PUT 'https://localhost:5665/v1/objects/hosts/example.localdomain' \
  -d '{ "templates": [ "generic-host" ], "attrs": { "address": "192.168.1.1", "check_command": "hostalive", "vars.os" : "Linux" }, "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -841,6 +850,9 @@ which is required for host objects:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X PUT 'https://localhost:5665/v1/objects/hosts/example.localdomain' \
  -d '{ "attrs": { "address": "192.168.1.1", "vars.os" : "Linux" }, "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -906,6 +918,9 @@ The following example updates the `address` attribute and the custom variable `o
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/objects/hosts/example.localdomain' \
  -d '{ "attrs": { "address": "192.168.1.2", "vars.os" : "Windows" }, "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -934,6 +949,9 @@ Example for deleting the host object `example.localdomain`:
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X DELETE 'https://localhost:5665/v1/objects/hosts/example.localdomain?cascade=1&pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -1026,7 +1044,9 @@ Example for the service `passive-ping`:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/process-check-result' \
 -d '{ "type": "Service", "filter": "host.name==\"icinga2-master1.localdomain\" && service.name==\"passive-ping\"", "exit_status": 2, "plugin_output": "PING CRITICAL - Packet loss = 100%", "performance_data": [ "rta=5000.000000ms;3000.000000;5000.000000;0.000000", "pl=100%;80;100;0" ], "check_source": "example.localdomain", "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -1075,7 +1095,9 @@ allowed for the service (`force=true`).
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/reschedule-check' \
  -d '{ "type": "Service", "filter": "service.name==\"ping6\"", "force": true, "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -1108,7 +1130,9 @@ host owners:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/send-custom-notification' \
  -d '{ "type": "Host", "author": "icingaadmin", "comment": "System is going down for maintenance", "force": true, "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -1143,7 +1167,9 @@ Example:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/delay-notification' \
  -d '{ "type": "Service", "timestamp": 1446389894, "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -1183,7 +1209,9 @@ a notification for them:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/acknowledge-problem' \
  -d '{ "type": "Service", "filter": "service.state==2&service.state_type=1", "author": "icingaadmin", "comment": "Global outage. Working on it.", "notify": true, "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -1216,7 +1244,9 @@ The example removes all service acknowledgements:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/remove-acknowledgement' \
  -d '{ "type": "Service", "pretty": true }'
+```
 
+```
 {
     "results": [
         {
@@ -1249,6 +1279,9 @@ The following example adds a comment for all `ping4` services:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/add-comment' \
  -d '{ "type": "Service", "filter": "service.name==\"ping4\"", "author": "icingaadmin", "comment": "Troubleticket #123456789 opened.", "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -1288,6 +1321,9 @@ Example for a simple filter using the `comment` URL parameter:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/remove-comment' \
  -d '{ "comment": "icinga2-satellite2.localdomain!ping4!9a4c43f5-9407-a536-18bf-4a6cc4b73a9f", "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -1304,6 +1340,9 @@ Example for removing all service comments using a service name filter for `ping4
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/remove-comment'
  -d '{ "type": "Service", "filter": "service.name==\"ping4\"", "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -1344,6 +1383,9 @@ Example for scheduling a downtime for all `ping4` services:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/schedule-downtime' \
  -d '{ "type": "Service", "filter": "service.name==\"ping4\"", "start_time": 1446388806, "end_time": 1446389806, "duration": 1000, "author": "icingaadmin", "comment": "IPv4 network maintenance", "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -1401,6 +1443,9 @@ Example for a simple filter using the `downtime` URL parameter:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/remove-downtime' \
  -d '{ "downtime": "icinga2-satellite2.localdomain!ping4!abc59032-4589-abcd-4567-ecf67856c347", "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -1417,6 +1462,9 @@ Example for removing all host downtimes using a host name filter for `icinga2-sa
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/remove-downtime' \
  -d '{ "type": "Host", "filter": "host.name==\"icinga2-satellite2.localdomain\"", "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -1442,7 +1490,9 @@ $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
   },
   "pretty": true
 }'
+```
 
+```
 {
     "results": [
         {
@@ -1466,7 +1516,9 @@ Example:
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/shutdown-process?pretty=1'
+```
 
+```
 {
     "results": [
         {
@@ -1490,7 +1542,9 @@ Example:
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/restart-process?pretty=1'
+```
 
+```
 {
     "results": [
         {
@@ -1524,6 +1578,9 @@ Example:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/actions/generate-ticket' \
  -d '{ "cn": "icinga2-agent1.localdomain", "pretty": true }'
+```
+
+```
 {
     "results": [
         {
@@ -1745,7 +1802,9 @@ Example:
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/events' \
  -d '{ "queue": "myqueue", "types": "CheckResult", "filter": "event.check_result.exit_status==2" }'
+```
 
+```
 {"check_result":{ ... },"host":"example.localdomain","service":"ping4","timestamp":1445421319.7226390839,"type":"CheckResult"}
 {"check_result":{ ... },"host":"example.localdomain","service":"ping4","timestamp":1445421324.7226390839,"type":"CheckResult"}
 {"check_result":{ ... },"host":"example.localdomain","service":"ping4","timestamp":1445421329.7226390839,"type":"CheckResult"}
@@ -1759,6 +1818,9 @@ Example:
 
 ```
 $ curl -k -s -S -i -u root:icinga 'https://localhost:5665/v1/status?pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -1781,6 +1843,9 @@ You can limit the output by specifying a status type in the URL, e.g. `IcingaApp
 
 ```
 $ curl -k -s -S -i -u root:icinga 'https://localhost:5665/v1/status/IcingaApplication?pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -1832,6 +1897,9 @@ creates a new empty configuration package.
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
 -X POST 'https://localhost:5665/v1/config/packages/example-cmdb?pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -1896,6 +1964,9 @@ intentional.
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' -X POST \
 -d '{ "files": { "conf.d/test.conf": "object Host \"cmdb-host\" { chec_command = \"dummy\" }" }, "pretty": true }' \
 'https://localhost:5665/v1/config/stages/example-cmdb'
+```
+
+```
 {
     "results": [
         {
@@ -1946,6 +2017,9 @@ have an active stage.
 
 ```
 $ curl -k -s -S -i -u root:icinga 'https://localhost:5665/v1/config/packages?pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -1967,6 +2041,9 @@ the package name (`example-cmdb`) and stage name (`7e7861c8-8008-4e8d-9910-2a0bb
 
 ```
 $ curl -k -s -S -i -u root:icinga 'https://localhost:5665/v1/config/stages/example-cmdb/7e7861c8-8008-4e8d-9910-2a0bb26921bd?pretty=1'
+```
+
+```
 {
     "results": [
 ...
@@ -2054,6 +2131,9 @@ in the `example-cmdb` configuration package:
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X DELETE 'https://localhost:5665/v1/config/stages/example-cmdb/7e7861c8-8008-4e8d-9910-2a0bb26921bd?pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -2075,6 +2155,9 @@ This example entirely deletes the configuration package `example-cmdb`:
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' -X DELETE \
 'https://localhost:5665/v1/config/packages/example-cmdb?pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -2106,6 +2189,9 @@ In order to view a specific configuration object type specify its name inside th
 
 ```
 $ curl -k -s -S -i -u root:icinga 'https://localhost:5665/v1/types/Object?pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -2252,6 +2338,9 @@ Example for fetching the command line from the local host's last check result:
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/console/execute-script?command=get_host(NodeName).last_check_result.command&sandboxed=0&session=bb75fd7c-c686-407d-9688-582c04227756&pretty=1'
+```
+
+```
 {
     "results": [
         {
@@ -2277,6 +2366,9 @@ similar fashion when pressing TAB inside the [console CLI command](11-cli-comman
 ```
 $ curl -k -s -S -i -u root:icinga -H 'Accept: application/json' \
  -X POST 'https://localhost:5665/v1/console/auto-complete-script?command=Host.&sandboxed=0&session=bb75fd7c-c686-407d-9688-582c04227756&pretty=1'
+```
+
+```
 {
     "results": [
         {
