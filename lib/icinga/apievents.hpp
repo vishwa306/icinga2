@@ -39,6 +39,9 @@ public:
 	static void DowntimeRemovedHandler(const Downtime::Ptr& downtime);
 	static void DowntimeStartedHandler(const Downtime::Ptr& downtime);
 	static void DowntimeTriggeredHandler(const Downtime::Ptr& downtime);
+
+	static void OnActiveChangedHandler(const ConfigObject::Ptr& object, const Value&);
+	static void OnVersionChangedHandler(const ConfigObject::Ptr& object, const Value&);
 };
 
 }

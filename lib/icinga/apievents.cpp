@@ -30,6 +30,9 @@ void ApiEvents::StaticInitialize()
 	Downtime::OnDowntimeRemoved.connect(&ApiEvents::DowntimeRemovedHandler);
 	Downtime::OnDowntimeStarted.connect(&ApiEvents::DowntimeStartedHandler);
 	Downtime::OnDowntimeTriggered.connect(&ApiEvents::DowntimeTriggeredHandler);
+
+	ConfigObject::OnActiveChanged.connect(&ApiEvents::OnActiveChangedHandler);
+	ConfigObject::OnVersionChanged.connect(&ApiEvents::OnVersionChangedHandler);
 }
 
 void ApiEvents::CheckResultHandler(const Checkable::Ptr& checkable, const CheckResult::Ptr& cr, const MessageOrigin::Ptr& origin)
@@ -383,6 +386,79 @@ void ApiEvents::DowntimeTriggeredHandler(const Downtime::Ptr& downtime)
 		{ "type", "DowntimeTriggered" },
 		{ "timestamp", Utility::GetTime() },
 		{ "downtime", Serialize(downtime, FAConfig | FAState) }
+	});
+
+	for (const EventQueue::Ptr& queue : queues) {
+		queue->ProcessEvent(result);
+	}
+
+	inboxes.Push(std::move(result));
+}
+
+void ApiEvents::OnActiveChangedHandler(const ConfigObject::Ptr& object, const Value&)
+{
+	if (object->IsActive()) {
+		std::vector<EventQueue::Ptr> queues = EventQueue::GetQueuesForType("ObjectCreated");
+		auto inboxes (EventsRouter::GetInstance().GetInboxes(EventType::ObjectCreated));
+
+		if (queues.empty() && ! inboxes) {
+			return;
+		}
+
+		Log(LogDebug, "ApiEvents", "Processing event type 'ObjectCreated'");
+
+		Dictionary::Ptr result = new Dictionary ({
+			{"type", "ObjectCreated"},
+			{"timestamp", Utility::GetTime()},
+			{"object_type", object->GetReflectionType()->GetName()},
+			{"object_name", object->GetName()},
+		});
+
+		for (const EventQueue::Ptr& queue : queues) {
+			queue->ProcessEvent(result);
+		}
+
+		inboxes.Push(std::move(result));
+	} else if (!object->IsActive() &&
+		object->GetExtension("ConfigObjectDeleted")) {
+		std::vector<EventQueue::Ptr> queues = EventQueue::GetQueuesForType("ObjectDeleted");
+		auto inboxes (EventsRouter::GetInstance().GetInboxes(EventType::ObjectDeleted));
+
+		if (queues.empty() && ! inboxes)
+			return;
+
+		Log(LogDebug, "ApiEvents", "Processing event type 'ObjectDeleted'.");
+
+		Dictionary::Ptr result = new Dictionary ({
+			{"type", "ObjectDeleted"},
+			{"timestamp", Utility::GetTime()},
+			{"object_type", object->GetReflectionType()->GetName()},
+			{"object_name", object->GetName()},
+		});
+
+		for (const EventQueue::Ptr& queue : queues) {
+			queue->ProcessEvent(result);
+		}
+
+		inboxes.Push(std::move(result));
+	}
+}
+
+void ApiEvents::OnVersionChangedHandler(const ConfigObject::Ptr& object, const Value&)
+{
+	std::vector<EventQueue::Ptr> queues = EventQueue::GetQueuesForType("ObjectModified");
+	auto inboxes (EventsRouter::GetInstance().GetInboxes(EventType::ObjectModified));
+
+	if (queues.empty() && !inboxes)
+		return;
+
+	Log(LogDebug, "ApiEvents", "Processing event type 'ObjectModified'.");
+
+	Dictionary::Ptr result = new Dictionary ({
+		{"type", "ObjectModified"},
+		{"timestamp", Utility::GetTime()},
+		{"object_type", object->GetReflectionType()->GetName()},
+		{"object_name", object->GetName()}
 	});
 
 	for (const EventQueue::Ptr& queue : queues) {
