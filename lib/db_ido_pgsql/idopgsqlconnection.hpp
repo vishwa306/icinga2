@@ -72,6 +72,7 @@ private:
 	void Disconnect();
 	void InternalNewTransaction();
 	void Reconnect();
+	void ImportSchema();
 
 	void AssertOnWorkQueue();
 
