@@ -14,6 +14,7 @@
 #include "base/exception.hpp"
 #include "base/convert.hpp"
 #include "base/statsfunction.hpp"
+#include <chrono>
 
 using namespace icinga;
 
@@ -69,7 +70,7 @@ void CheckerComponent::Start(bool runtimeCreated)
 void CheckerComponent::Stop(bool runtimeRemoved)
 {
 	{
-		boost::mutex::scoped_lock lock(m_Mutex);
+		std::unique_lock<std::mutex> lock(m_Mutex);
 		m_Stopped = true;
 		m_CV.notify_all();
 	}
@@ -112,7 +113,7 @@ void CheckerComponent::CheckThreadProc()
 	Utility::SetThreadName("Check Scheduler");
 	IcingaApplication::Ptr icingaApp = IcingaApplication::GetInstance();
 
-	boost::mutex::scoped_lock lock(m_Mutex);
+	std::unique_lock<std::mutex> lock(m_Mutex);
 
 	for (;;) {
 		typedef boost::multi_index::nth_index<CheckableSet, 1>::type CheckTimeView;
@@ -140,7 +141,7 @@ void CheckerComponent::CheckThreadProc()
 
 		if (wait > 0) {
 			/* Wait for the next check. */
-			m_CV.timed_wait(lock, boost::posix_time::milliseconds(long(wait * 1000)));
+			m_CV.wait_for(lock, std::chrono::duration<double>(wait));
 
 			continue;
 		}
@@ -253,7 +254,7 @@ void CheckerComponent::ExecuteCheckHelper(const Checkable::Ptr& checkable)
 	Checkable::DecreasePendingChecks();
 
 	{
-		boost::mutex::scoped_lock lock(m_Mutex);
+		std::unique_lock<std::mutex> lock(m_Mutex);
 
 		/* remove the object from the list of pending objects; if it's not in the
 		 * list this was a manual (i.e. forced) check and we must not re-add the
@@ -279,7 +280,7 @@ void CheckerComponent::ResultTimerHandler()
 	std::ostringstream msgbuf;
 
 	{
-		boost::mutex::scoped_lock lock(m_Mutex);
+		std::unique_lock<std::mutex> lock(m_Mutex);
 
 		msgbuf << "Pending checkables: " << m_PendingCheckables.size() << "; Idle checkables: " << m_IdleCheckables.size() << "; Checks/s: "
 			<< (CIB::GetActiveHostChecksStatistics(60) + CIB::GetActiveServiceChecksStatistics(60)) / 60.0;
@@ -299,7 +300,7 @@ void CheckerComponent::ObjectHandler(const ConfigObject::Ptr& object)
 	bool same_zone = (!zone || Zone::GetLocalZone() == zone);
 
 	{
-		boost::mutex::scoped_lock lock(m_Mutex);
+		std::unique_lock<std::mutex> lock(m_Mutex);
 
 		if (object->IsActive() && !object->IsPaused() && same_zone) {
 			if (m_PendingCheckables.find(checkable) != m_PendingCheckables.end())
@@ -325,7 +326,7 @@ CheckableScheduleInfo CheckerComponent::GetCheckableScheduleInfo(const Checkable
 
 void CheckerComponent::NextCheckChangedHandler(const Checkable::Ptr& checkable)
 {
-	boost::mutex::scoped_lock lock(m_Mutex);
+	std::unique_lock<std::mutex> lock(m_Mutex);
 
 	/* remove and re-insert the object from the set in order to force an index update */
 	typedef boost::multi_index::nth_index<CheckableSet, 0>::type CheckableView;
@@ -346,14 +347,14 @@ void CheckerComponent::NextCheckChangedHandler(const Checkable::Ptr& checkable)
 
 unsigned long CheckerComponent::GetIdleCheckables()
 {
-	boost::mutex::scoped_lock lock(m_Mutex);
+	std::unique_lock<std::mutex> lock(m_Mutex);
 
 	return m_IdleCheckables.size();
 }
 
 unsigned long CheckerComponent::GetPendingCheckables()
 {
-	boost::mutex::scoped_lock lock(m_Mutex);
+	std::unique_lock<std::mutex> lock(m_Mutex);
 
 	return m_PendingCheckables.size();
 }

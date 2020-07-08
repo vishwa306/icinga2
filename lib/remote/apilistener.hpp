@@ -129,8 +129,8 @@ protected:
 private:
 	Shared<boost::asio::ssl::context>::Ptr m_SSLContext;
 
-	mutable boost::mutex m_AnonymousClientsLock;
-	mutable boost::mutex m_HttpClientsLock;
+	mutable std::mutex m_AnonymousClientsLock;
+	mutable std::mutex m_HttpClientsLock;
 	std::set<JsonRpcConnection::Ptr> m_AnonymousClients;
 	std::set<HttpServerConnection::Ptr> m_HttpClients;
 
@@ -166,7 +166,7 @@ private:
 	WorkQueue m_RelayQueue;
 	WorkQueue m_SyncQueue{0, 4};
 
-	boost::mutex m_LogLock;
+	std::mutex m_LogLock;
 	Stream::Ptr m_LogFile;
 	size_t m_LogMessageCount{0};
 
@@ -186,7 +186,7 @@ private:
 	void RemoveStatusFile();
 
 	/* filesync */
-	static boost::mutex m_ConfigSyncStageLock;
+	static std::mutex m_ConfigSyncStageLock;
 
 	void SyncLocalZoneDirs() const;
 	void SyncLocalZoneDir(const Zone::Ptr& zone) const;
@@ -200,7 +200,7 @@ private:
 
 	static void TryActivateZonesStageCallback(const ProcessResult& pr,
 		const std::vector<String>& relativePaths);
-	static void AsyncTryActivateZonesStage(const std::vector<String>& relativePaths, const Shared<boost::mutex::scoped_lock>::Ptr& lock);
+	static void AsyncTryActivateZonesStage(const std::vector<String>& relativePaths, const Shared<std::unique_lock<std::mutex>>::Ptr& lock);
 
 	static String GetChecksum(const String& content);
 	static bool CheckConfigChange(const ConfigDirInformation& oldConfig, const ConfigDirInformation& newConfig);
@@ -218,7 +218,7 @@ private:
 	void SyncClient(const JsonRpcConnection::Ptr& aclient, const Endpoint::Ptr& endpoint, bool needSync);
 
 	/* API Config Packages */
-	mutable boost::mutex m_ActivePackageStagesLock;
+	mutable std::mutex m_ActivePackageStagesLock;
 	std::map<String, String> m_ActivePackageStages;
 
 	void UpdateActivePackageStagesCache();

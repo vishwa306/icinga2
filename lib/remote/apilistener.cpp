@@ -250,7 +250,7 @@ void ApiListener::Start(bool runtimeCreated)
 	ObjectImpl<ApiListener>::Start(runtimeCreated);
 
 	{
-		boost::mutex::scoped_lock lock(m_LogLock);
+		std::unique_lock<std::mutex> lock(m_LogLock);
 		OpenLogFile();
 	}
 
@@ -304,7 +304,7 @@ void ApiListener::Stop(bool runtimeDeleted)
 		<< "'" << GetName() << "' stopped.";
 
 	{
-		boost::mutex::scoped_lock lock(m_LogLock);
+		std::unique_lock<std::mutex> lock(m_LogLock);
 		CloseLogFile();
 		RotateLogFile();
 	}
@@ -1007,7 +1007,7 @@ void ApiListener::PersistMessage(const Dictionary::Ptr& message, const ConfigObj
 		pmessage->Set("secobj", secname);
 	}
 
-	boost::mutex::scoped_lock lock(m_LogLock);
+	std::unique_lock<std::mutex> lock(m_LogLock);
 	if (m_LogFile) {
 		NetString::WriteStringToStream(m_LogFile, JsonEncode(pmessage));
 		m_LogMessageCount++;
@@ -1289,7 +1289,7 @@ void ApiListener::ReplayLog(const JsonRpcConnection::Ptr& client)
 	}
 
 	for (;;) {
-		boost::mutex::scoped_lock lock(m_LogLock);
+		std::unique_lock<std::mutex> lock(m_LogLock);
 
 		CloseLogFile();
 
@@ -1566,7 +1566,7 @@ double ApiListener::CalculateZoneLag(const Endpoint::Ptr& endpoint)
 
 bool ApiListener::AddAnonymousClient(const JsonRpcConnection::Ptr& aclient)
 {
-	boost::mutex::scoped_lock lock(m_AnonymousClientsLock);
+	std::unique_lock<std::mutex> lock(m_AnonymousClientsLock);
 
 	if (GetMaxAnonymousClients() >= 0 && (long)m_AnonymousClients.size() + 1 > (long)GetMaxAnonymousClients())
 		return false;
@@ -1577,31 +1577,31 @@ bool ApiListener::AddAnonymousClient(const JsonRpcConnection::Ptr& aclient)
 
 void ApiListener::RemoveAnonymousClient(const JsonRpcConnection::Ptr& aclient)
 {
-	boost::mutex::scoped_lock lock(m_AnonymousClientsLock);
+	std::unique_lock<std::mutex> lock(m_AnonymousClientsLock);
 	m_AnonymousClients.erase(aclient);
 }
 
 std::set<JsonRpcConnection::Ptr> ApiListener::GetAnonymousClients() const
 {
-	boost::mutex::scoped_lock lock(m_AnonymousClientsLock);
+	std::unique_lock<std::mutex> lock(m_AnonymousClientsLock);
 	return m_AnonymousClients;
 }
 
 void ApiListener::AddHttpClient(const HttpServerConnection::Ptr& aclient)
 {
-	boost::mutex::scoped_lock lock(m_HttpClientsLock);
+	std::unique_lock<std::mutex> lock(m_HttpClientsLock);
 	m_HttpClients.insert(aclient);
 }
 
 void ApiListener::RemoveHttpClient(const HttpServerConnection::Ptr& aclient)
 {
-	boost::mutex::scoped_lock lock(m_HttpClientsLock);
+	std::unique_lock<std::mutex> lock(m_HttpClientsLock);
 	m_HttpClients.erase(aclient);
 }
 
 std::set<HttpServerConnection::Ptr> ApiListener::GetHttpClients() const
 {
-	boost::mutex::scoped_lock lock(m_HttpClientsLock);
+	std::unique_lock<std::mutex> lock(m_HttpClientsLock);
 	return m_HttpClients;
 }
 
@@ -1617,7 +1617,7 @@ Endpoint::Ptr ApiListener::GetLocalEndpoint() const
 
 void ApiListener::UpdateActivePackageStagesCache()
 {
-	boost::mutex::scoped_lock lock(m_ActivePackageStagesLock);
+	std::unique_lock<std::mutex> lock(m_ActivePackageStagesLock);
 
 	for (auto package : ConfigPackageUtility::GetPackages()) {
 		String activeStage;
@@ -1639,7 +1639,7 @@ void ApiListener::UpdateActivePackageStagesCache()
 
 void ApiListener::CheckApiPackageIntegrity()
 {
-	boost::mutex::scoped_lock lock(m_ActivePackageStagesLock);
+	std::unique_lock<std::mutex> lock(m_ActivePackageStagesLock);
 
 	for (auto package : ConfigPackageUtility::GetPackages()) {
 		String activeStage;
@@ -1665,13 +1665,13 @@ void ApiListener::CheckApiPackageIntegrity()
 
 void ApiListener::SetActivePackageStage(const String& package, const String& stage)
 {
-	boost::mutex::scoped_lock lock(m_ActivePackageStagesLock);
+	std::unique_lock<std::mutex> lock(m_ActivePackageStagesLock);
 	m_ActivePackageStages[package] = stage;
 }
 
 String ApiListener::GetActivePackageStage(const String& package)
 {
-	boost::mutex::scoped_lock lock(m_ActivePackageStagesLock);
+	std::unique_lock<std::mutex> lock(m_ActivePackageStagesLock);
 
 	if (m_ActivePackageStages.find(package) == m_ActivePackageStages.end())
 		BOOST_THROW_EXCEPTION(ScriptError("Package " + package + " has no active stage."));
@@ -1682,7 +1682,7 @@ String ApiListener::GetActivePackageStage(const String& package)
 void ApiListener::RemoveActivePackageStage(const String& package)
 {
 	/* This is the rare occassion when a package has been deleted. */
-	boost::mutex::scoped_lock lock(m_ActivePackageStagesLock);
+	std::unique_lock<std::mutex> lock(m_ActivePackageStagesLock);
 
 	auto it = m_ActivePackageStages.find(package);
 

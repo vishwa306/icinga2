@@ -332,7 +332,7 @@ void DbObject::OnStatusUpdate()
 
 DbObject::Ptr DbObject::GetOrCreateByObject(const ConfigObject::Ptr& object)
 {
-	boost::mutex::scoped_lock lock(GetStaticMutex());
+	std::unique_lock<std::mutex> lock(GetStaticMutex());
 
 	DbObject::Ptr dbobj = object->GetExtension("DbObject");
 
@@ -407,8 +407,8 @@ void DbObject::VersionChangedHandler(const ConfigObject::Ptr& object)
 	}
 }
 
-boost::mutex& DbObject::GetStaticMutex()
+std::mutex& DbObject::GetStaticMutex()
 {
-	static boost::mutex mutex;
+	static std::mutex mutex;
 	return mutex;
 }
