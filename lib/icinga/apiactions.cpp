@@ -489,12 +489,18 @@ Dictionary::Ptr ApiActions::RemoveDowntime(const ConfigObject::Ptr& object,
 			}
 
 			Downtime::RemoveDowntime(downtime->GetName(), true);
+			String configOwner = downtime->GetConfigOwner();
+
+			if (!configOwner.IsEmpty() && !downtime->IsExpired())
+				return ApiActions::CreateResult(400, "Cannot remove downtime '" + downtime->GetName()
+					+ "'. It is owned by scheduled downtime object '" + configOwner + "'");
 		}
 
 		return ApiActions::CreateResult(200, "Successfully removed all downtimes for object '" + checkable->GetName() + "'.");
 	}
 
 	Downtime::Ptr downtime = static_pointer_cast<Downtime>(object);
+	String configOwner = downtime->GetConfigOwner();
 
 	if (!downtime)
 		return ApiActions::CreateResult(404, "Cannot remove non-existent downtime object.");
@@ -507,6 +513,10 @@ Dictionary::Ptr ApiActions::RemoveDowntime(const ConfigObject::Ptr& object,
 	String downtimeName = downtime->GetName();
 
 	Downtime::RemoveDowntime(downtimeName, true);
+
+	if (!configOwner.IsEmpty() && !downtime->IsExpired())
+		return ApiActions::CreateResult(400, "Cannot remove downtime '" + downtime->GetName()
+			+ "'. It is owned by scheduled downtime object '" + configOwner + "'");
 
 	return ApiActions::CreateResult(200, "Successfully removed downtime '" + downtimeName + "'.");
 }
