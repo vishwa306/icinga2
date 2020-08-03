@@ -63,7 +63,7 @@ git log --use-mailmap | grep '^Author:' | cut -f2- -d' ' | sort -f | uniq > AUTH
 Update the version:
 
 ```
-sed -i "s/Version: .*/Version: $VERSION/g" VERSION
+perl -pi -e "s/Version: .*/Version: $VERSION/g" VERSION
 ```
 
 ## Changelog <a id="changelog"></a>
@@ -164,7 +164,7 @@ git commit -av -m "Switch build type for $VERSION-1"
 Set the `Version`, `revision` and `%changelog` inside the spec file:
 
 ```
-sed -i "s/Version:.*/Version:        $VERSION/g" icinga2.spec
+perl -pi -e "s/Version:.*/Version:        $VERSION/g" icinga2.spec
 
 vim icinga2.spec
 
