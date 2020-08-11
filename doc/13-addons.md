@@ -183,6 +183,7 @@ Additionally external services can be [integrated with Icinga 2](https://icinga.
 * [Pagerduty](https://icinga.com/products/integrations/pagerduty/)
 * [VictorOps](https://icinga.com/products/integrations/victorops/)
 * [StackStorm](https://icinga.com/products/integrations/stackstorm/)
+* [Zenduty](https://docs.zenduty.com/docs/icinga2)
 
 More information can be found on the [Icinga Website](https://icinga.com/).
 
